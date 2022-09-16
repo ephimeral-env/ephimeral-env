@@ -5,6 +5,8 @@ FROM archlinux:latest
 # After lanching the image run /start.sh and navigate with the browser to: 
 # http://localhost:6080/vnc.html
 
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+
 # Disable questions from some packages during installation
 ENV DEBIAN_FRONTEND="noninteractive" 
 
@@ -147,8 +149,6 @@ RUN sudo git clone https://github.com/novnc/noVNC
 
 # TODO: is this needed?
 # WORKDIR /var/log/supervisor/
-
-# ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
 # Prepare X11, x11vnc, i3 and noVNC from supervisor
 COPY supervisord.conf /etc/supervisord.conf

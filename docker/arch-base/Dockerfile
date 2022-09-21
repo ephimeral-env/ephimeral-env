@@ -1,9 +1,12 @@
 FROM archlinux:latest
 
 # Run the image with:
-# docker run -it -v C:\Users\blasc\projects\you-art\:/workspace -h "dev-env-youart" --privileged -p 8083:8083 -p 6080:6080 blascoburguillos/dev-env:arch-22.9.14
+# docker run -it -v C:\Users\blasc\projects\you-art\:/workspace -h "dev-env-youart" --privileged -p 5900:5900 -p 6080:6080 blascoburguillos/dev-env:arch-22.9.14
 # After lanching the image run /start.sh and navigate with the browser to: 
 # http://localhost:6080/vnc.html
+#
+# Alternatively, we can use a VNC viewer, like TigerVNC:
+# https://sourceforge.net/projects/tigervnc/files/stable/1.12.0/
 
 ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
@@ -42,15 +45,6 @@ RUN git clone https://aur.archlinux.org/yay.git && \
 
 # Python
 RUN sudo pacman -S --noconfirm python
-
-# # Authorize SSH Host
-# RUN mkdir -p ~/.ssh && \
-#     chmod 0700 ~/.ssh && \
-#     ssh-keyscan github.com > ~/.ssh/known_hosts
-# COPY id_rsa /home/$user/.ssh/id_rsa
-# COPY id_rsa.pub /home/$user/.ssh/id_rsa.pub
-# RUN sudo chmod a+r ~/.ssh/id_rsa && \
-#     sudo chmod a+r ~/.ssh/id_rsa.pub
 
 # Config git
 RUN git config --global user.email "dev@devenv.com" && \
@@ -161,10 +155,16 @@ RUN sudo pacman -S --noconfirm tmux
 # ranger: terminal directory explorer
 RUN sudo pacman -S --noconfirm ranger
 
-# Be sure that the noVNC port is exposed
-EXPOSE 8083
-EXPOSE 6080
-
 # Google Chrome
 # Web browser not properly working on docker, my current best approach is to open the port and connect to it
 # RUN yay -S --noconfirm google-chrome
+
+# Firefox
+RUN sudo pacman -S --noconfirm firefox
+
+# Port configuration
+
+# VNC port
+EXPOSE 5900
+# NnoVNC port
+EXPOSE 6080

@@ -29,14 +29,14 @@ RUN apt-get install -y python3.8 && \
     apt-get install -y python3.8-distutils && \
     apt-get install -y python3.8-venv
 
-# Authorize SSH Host
-RUN mkdir -p /root/.ssh && \
-    chmod 0700 /root/.ssh && \
-    ssh-keyscan github.com > /root/.ssh/known_hosts
-COPY id_rsa /root/.ssh/id_rsa
-COPY id_rsa.pub /root/.ssh/id_rsa.pub
-RUN chmod 600 /root/.ssh/id_rsa && \
-    chmod 600 /root/.ssh/id_rsa.pub
+# # Authorize SSH Host
+# RUN mkdir -p /root/.ssh && \
+#     chmod 0700 /root/.ssh && \
+#     ssh-keyscan github.com > /root/.ssh/known_hosts
+# COPY id_rsa /root/.ssh/id_rsa
+# COPY id_rsa.pub /root/.ssh/id_rsa.pub
+# RUN chmod 600 /root/.ssh/id_rsa && \
+#     chmod 600 /root/.ssh/id_rsa.pub
 
 # Config git
 RUN git config --global user.email "blascoburguillos@gmail.com" && \

@@ -8,7 +8,7 @@ FROM archlinux:latest
 # Alternatively, we can use a VNC viewer, like TigerVNC:
 # https://sourceforge.net/projects/tigervnc/files/stable/1.12.0/
 
-ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+# ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
 # Disable questions from some packages during installation
 ENV DEBIAN_FRONTEND="noninteractive" 
@@ -28,12 +28,21 @@ RUN pacman -S  --noconfirm \
         base-devel \
         dbus
 
-# makepkg user and workdir
-ARG user=dev
-RUN useradd --system --create-home $user && \
-    echo "$user ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/$user
-USER $user
-WORKDIR /home/$user
+# # makepkg user and workdir
+# ARG user=gitpod
+# RUN useradd --system --create-home $user && \
+#     echo "$user ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/$user
+# USER $user
+# WORKDIR /home/$user
+
+### Gitpod user ###
+# '-l': see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
+RUN groupadd sudo && useradd -l -u 33333 -G sudo -md /home/gitpod -s /bin/bash -p gitpod gitpod && \
+    echo "gitpod ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/gitpod && \
+    mkdir /workspace && chown -hR gitpod:gitpod /workspace
+
+USER gitpod
+WORKDIR /home/gitpod
 
 # Install yay
 RUN git clone https://aur.archlinux.org/yay.git && \

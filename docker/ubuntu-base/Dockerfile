@@ -10,6 +10,8 @@ FROM ubuntu:20.04
 # Disable questions from some packages during installation
 ENV DEBIAN_FRONTEND="noninteractive" 
 
+SHELL ["/bin/bash", "-c"]
+
 # Upgrade and install essential packages
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -22,6 +24,12 @@ RUN apt-get update && \
         sudo \
         # supervisor \
         software-properties-common
+
+### Gitpod user ###
+# '-l': see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
+RUN useradd -l -u 33333 -G sudo -md /home/gitpod -s /bin/bash -p gitpod gitpod && \
+    echo "gitpod ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/gitpod && \
+    mkdir /workspace && chown -hR gitpod:gitpod /workspace
 
 # Install python 3.8
 # Do not install packages via pip, always create a venv first
@@ -39,12 +47,11 @@ RUN apt-get install -y python3.8 && \
 #     chmod 600 /root/.ssh/id_rsa.pub
 
 # Config git
-RUN git config --global user.email "blascoburguillos@gmail.com" && \
-    git config --global user.name "blasco"
+RUN git config --global user.email "dev@devenv.com" && \
+    git config --global user.name "dev"
 
 # Dotfiles
-# ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
-RUN git clone git@github.com:blasco/dotfiles.git ~/dotfiles && \
+RUN git clone https://github.com/blasco/dotfiles ~/dotfiles && \
     cd ~/dotfiles && \
     git submodule update --init --recursive
 
@@ -61,21 +68,21 @@ RUN apt-get install -y vim vim-gtk3 && \
     vim +PlugInstall +qall && \
     touch ~/dotfiles/vim/.vim_initialized
 
-# Nvim
-# TODO: download from gitrep and add symlink to usr/bin
-RUN mkdir -p ~/programs/neovim && \
-    cd ~/programs/neovim && \
-    wget https://github.com/neovim/neovim/releases/download/v0.7.2/nvim-linux64.tar.gz && \
-    tar xzvf nvim-linux64.tar.gz && \
-    ln -s ~/programs/neovim/nvim-linux64/bin /usr/bin/ && \
-    rm nvim-linux64.tar.gz && \
-    # Configure \
-    mkdir ~/.config && \
-    ln -s ~/dotfiles/vim  ~/.config/nvim && \
-    # Fix white borders in gtk-3.0 \
-    # ln -s ~/dotfiles/vim/gtk.css ~/.config/gtk-3.0/ && \
-    # Add an entry on dmenu for neovim \
-    ln -s ~/dotfiles/vim/nvim.desktop /usr/share/applications/
+# # Nvim
+# # TODO: download from gitrep and add symlink to usr/bin
+# RUN mkdir -p ~/programs/neovim && \
+#     cd ~/programs/neovim && \
+#     wget https://github.com/neovim/neovim/releases/download/v0.7.2/nvim-linux64.tar.gz && \
+#     tar xzvf nvim-linux64.tar.gz && \
+#     ln -s ~/programs/neovim/nvim-linux64/bin /usr/bin/ && \
+#     rm nvim-linux64.tar.gz && \
+#     # Configure \
+#     mkdir ~/.config && \
+#     ln -s ~/dotfiles/vim  ~/.config/nvim && \
+#     # Fix white borders in gtk-3.0 \
+#     # ln -s ~/dotfiles/vim/gtk.css ~/.config/gtk-3.0/ && \
+#     # Add an entry on dmenu for neovim \
+#     ln -s ~/dotfiles/vim/nvim.desktop /usr/share/applications/
 
 # i3
 RUN add-apt-repository ppa:regolith-linux/release && \
@@ -138,3 +145,13 @@ RUN source ~/.zshrc && nvm install 16.16.0 && \
 #      echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/google-chrome.list  && \
 #     sudo apt-get update -y && \
 #     sudo apt-get install -y google-chrome-stable
+
+# Prepare X11, x11vnc, i3 and noVNC from supervisor
+COPY supervisord.conf /etc/supervisord.conf
+COPY start.sh /
+RUN sudo chmod a+x /start.sh
+
+# VNC port
+EXPOSE 5900
+# NnoVNC port
+EXPOSE 6080
